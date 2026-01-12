@@ -844,21 +844,21 @@ class Diffusion(L.LightningModule):
       xt[:, 0] = x0[:, 0]
     
     x_input = xt
-    if self.cross_attn:
+    if self.cross_attn: # here is the place L -> 2L, first L is noisy, second L clean
       x_input = torch.cat((xt, x0), dim=-1)
 
-    model_output = self.forward(x_input, sigma=sigma)
-    utils.print_nans(model_output, 'model_output')
+    logits = self.forward(x_input, sigma=sigma) # This is the logits!
+    utils.print_nans(logits, 'model_output')
 
     if self.parameterization == 'sedd':
       return dsigma * self._score_entropy(
-        model_output, sigma, xt, x0)
+        logits, sigma, xt, x0)
 
     log_p_theta = torch.gather(
-      input=model_output,
+      input=logits,
       dim=-1,
       index=x0[:, :, None]).squeeze(-1)
-    loss = loss_scale * log_p_theta
+    loss = loss_scale * log_p_theta # Weight here! the weight of different mask token position
     return loss
 
   def _loss(self, x0, attention_mask, t=None, sampling_eps_min=None, sampling_eps_max=None):
