@@ -858,7 +858,7 @@ class Diffusion(L.LightningModule):
       input=logits,
       dim=-1,
       index=x0[:, :, None]).squeeze(-1)
-    loss = loss_scale * log_p_theta # Weight here! the weight of different mask token position
+    loss = loss_scale * log_p_theta # Weight here! the weight of different mask token position. The author said in block diffusion paper that this is adopted from MDLM. 
     return loss
 
   def _loss(self, x0, attention_mask, t=None, sampling_eps_min=None, sampling_eps_max=None):
